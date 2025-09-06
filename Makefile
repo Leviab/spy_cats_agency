@@ -37,7 +37,7 @@ start:
 	@echo "Starting postgres and waiting for it to be ready..."
 	@docker-compose up -d postgres
 	@echo "Waiting for postgres to be healthy (this may take 10-15 seconds)..."
-	@powershell -Command "Start-Sleep 15"
+	@bash -c "sleep 15"
 	@echo "Running database migrations..."
 	@go run ./cmd/migrate -direction=up
 	@echo "Starting the application..."
