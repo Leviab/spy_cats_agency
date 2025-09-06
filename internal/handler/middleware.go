@@ -56,7 +56,7 @@ func ErrorMiddleware(logger *slog.Logger) gin.HandlerFunc {
 				)
 				c.JSON(appErr.Code, ErrorResponse{
 					Code:  appErr.Code,
-					Error: appErr.ErrorMessage.Error(),
+					Error: appErr.Message,
 				})
 				c.Abort()
 				return
