@@ -22,7 +22,7 @@ A RESTful API for managing spy cats, missions, and targets built with Go, Gin, a
 
 1. **Clone and setup the application:**
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/Leviab/spy_cats_agency
    cd spy_cats_agency
    cp .env.example .env
    ```
