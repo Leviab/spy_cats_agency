@@ -42,13 +42,13 @@ func main() {
 	cfg, err := config.LoadConfig(".")
 	if err != nil {
 		appLogger.Error("Failed to load config", slog.Any("error", err))
-		os.Exit(1)
+		panic(err)
 	}
 
 	db, err := postgres.New(cfg)
 	if err != nil {
 		appLogger.Error("Failed to connect to database", slog.Any("error", err))
-		os.Exit(1)
+		panic(err)
 	}
 	defer db.Close()
 

@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"errors"
 	"net/http"
 	"spy_cats_agency/internal/domain"
 	"spy_cats_agency/internal/service"
@@ -34,7 +33,7 @@ func NewMissionHandler(missionService service.MissionService) *MissionHandler {
 func (h *MissionHandler) CreateMission(c *gin.Context) {
 	var req CreateMissionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusBadRequest, err.Error(), err))
 		return
 	}
 
@@ -46,7 +45,7 @@ func (h *MissionHandler) CreateMission(c *gin.Context) {
 	}
 
 	if err := h.missionService.CreateMission(c.Request.Context(), mission); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to create mission", err))
 		return
 	}
 
@@ -66,13 +65,13 @@ func (h *MissionHandler) CreateMission(c *gin.Context) {
 func (h *MissionHandler) GetMission(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "invalid id format", err))
 		return
 	}
 
 	mission, err := h.missionService.GetMission(c.Request.Context(), id)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to get mission", err))
 		return
 	}
 
@@ -90,7 +89,7 @@ func (h *MissionHandler) GetMission(c *gin.Context) {
 func (h *MissionHandler) ListMissions(c *gin.Context) {
 	missions, err := h.missionService.ListMissions(c.Request.Context())
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to list missions", err))
 		return
 	}
 
@@ -109,12 +108,12 @@ func (h *MissionHandler) ListMissions(c *gin.Context) {
 func (h *MissionHandler) DeleteMission(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "invalid id format", err))
 		return
 	}
 
 	if err := h.missionService.DeleteMission(c.Request.Context(), id); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to delete mission", err))
 		return
 	}
 
@@ -136,18 +135,18 @@ func (h *MissionHandler) DeleteMission(c *gin.Context) {
 func (h *MissionHandler) AssignCatToMission(c *gin.Context) {
 	missionID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid mission id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "invalid id format", err))
 		return
 	}
 
 	var req AssignCatRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusBadRequest, err.Error(), err))
 		return
 	}
 
 	if err := h.missionService.AssignCatToMission(c.Request.Context(), missionID, req.CatID); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to assign cat to mission", err))
 		return
 	}
 
@@ -170,19 +169,19 @@ func (h *MissionHandler) AssignCatToMission(c *gin.Context) {
 func (h *MissionHandler) CompleteMission(c *gin.Context) {
 	missionID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid mission id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "Invalid mission ID format", err))
 		return
 	}
 
 	var req CompleteMissionRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusBadRequest, err.Error(), err))
 		return
 	}
 
 	mission, err := h.missionService.CompleteMission(c.Request.Context(), missionID, req.Completed)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to complete mission", err))
 		return
 	}
 
@@ -204,19 +203,19 @@ func (h *MissionHandler) CompleteMission(c *gin.Context) {
 func (h *MissionHandler) AddTargetToMission(c *gin.Context) {
 	missionID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid mission id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "Invalid mission ID format", err))
 		return
 	}
 
 	var req CreateTargetRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusBadRequest, err.Error(), err))
 		return
 	}
 
 	target := &domain.Target{Name: req.Name, Country: req.Country, Notes: req.Notes}
 	if err := h.missionService.AddTargetToMission(c.Request.Context(), missionID, target); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to add target to mission", err))
 		return
 	}
 
@@ -238,19 +237,19 @@ func (h *MissionHandler) AddTargetToMission(c *gin.Context) {
 func (h *MissionHandler) UpdateTargetNotes(c *gin.Context) {
 	targetID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid target id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "invalid id format", err))
 		return
 	}
 
 	var req UpdateTargetNotesRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusBadRequest, err.Error(), err))
 		return
 	}
 
 	target, err := h.missionService.UpdateTargetNotes(c.Request.Context(), targetID, req.Notes)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to update target notes", err))
 		return
 	}
 
@@ -269,13 +268,13 @@ func (h *MissionHandler) UpdateTargetNotes(c *gin.Context) {
 func (h *MissionHandler) CompleteTarget(c *gin.Context) {
 	targetID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid target id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "Invalid target ID format", err))
 		return
 	}
 
 	target, err := h.missionService.CompleteTarget(c.Request.Context(), targetID)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to complete target", err))
 		return
 	}
 
@@ -294,12 +293,12 @@ func (h *MissionHandler) CompleteTarget(c *gin.Context) {
 func (h *MissionHandler) DeleteTarget(c *gin.Context) {
 	targetID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid target id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "Invalid target ID format", err))
 		return
 	}
 
 	if err := h.missionService.DeleteTarget(c.Request.Context(), targetID); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to delete target", err))
 		return
 	}
 

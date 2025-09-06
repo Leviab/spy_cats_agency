@@ -1,89 +1,73 @@
 package handler
 
 import (
-	"net/http"
-	"strings"
-
+	"errors"
 	"github.com/gin-gonic/gin"
+	"log/slog"
+	"net/http"
 )
 
+// ErrorResponse represents the structure of error responses
 type ErrorResponse struct {
 	Error string `json:"error"`
-	Code  string `json:"code,omitempty"`
+	Code  int    `json:"code,omitempty"`
 }
 
 type MessageResponse struct {
 	Message string `json:"message"`
 }
 
-func ErrorMiddleware() gin.HandlerFunc {
+// AppError represents a custom application error
+type AppError struct {
+	Code         int    `json:"code"`
+	Message      string `json:"message"`
+	ErrorMessage error  `json:"error"`
+}
+
+// Error implements the error interface
+func (e *AppError) Error() string {
+	return e.Message
+}
+
+// NewAppError creates a new custom application error
+func NewAppError(code int, message string, err error) *AppError {
+	return &AppError{
+		Code:         code,
+		Message:      message,
+		ErrorMessage: err,
+	}
+}
+
+func ErrorMiddleware(logger *slog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
 		if len(c.Errors) > 0 {
-			err := c.Errors.Last()
-			status := http.StatusInternalServerError
-			msg := "Internal server error"
-			code := "INTERNAL_ERROR"
+			err := c.Errors.Last().Err
 
-			errMsg := strings.ToLower(err.Error())
-
-			switch {
-			case strings.Contains(errMsg, "not found"):
-				status = http.StatusNotFound
-				msg = "Resource not found"
-				code = "NOT_FOUND"
-
-			case strings.Contains(errMsg, "unauthorized") || strings.Contains(errMsg, "unauthenticated"):
-				status = http.StatusUnauthorized
-				msg = "Authentication required"
-				code = "UNAUTHORIZED"
-
-			case strings.Contains(errMsg, "forbidden") || strings.Contains(errMsg, "access denied"):
-				status = http.StatusForbidden
-				msg = "Access denied"
-				code = "FORBIDDEN"
-
-			case strings.Contains(errMsg, "invalid") ||
-				strings.Contains(errMsg, "must have between") ||
-				strings.Contains(errMsg, "cannot have more than") ||
-				strings.Contains(errMsg, "validation failed") ||
-				strings.Contains(errMsg, "bad request"):
-				status = http.StatusBadRequest
-				msg = "Invalid request"
-				code = "BAD_REQUEST"
-
-			case strings.Contains(errMsg, "cannot delete") ||
-				strings.Contains(errMsg, "not available") ||
-				strings.Contains(errMsg, "conflict") ||
-				strings.Contains(errMsg, "already exists"):
-				status = http.StatusConflict
-				msg = "Resource conflict"
-				code = "CONFLICT"
-
-			case strings.Contains(errMsg, "timeout") || strings.Contains(errMsg, "deadline exceeded"):
-				status = http.StatusRequestTimeout
-				msg = "Request timeout"
-				code = "TIMEOUT"
-
-			case strings.Contains(errMsg, "too many"):
-				status = http.StatusTooManyRequests
-				msg = "Rate limit exceeded"
-				code = "RATE_LIMIT"
+			// Check if it's our custom AppError
+			var appErr *AppError
+			if errors.As(err, &appErr) {
+				logger.Error("error",
+					slog.Int("status", appErr.Code),
+					slog.String("error", appErr.ErrorMessage.Error()),
+					slog.String("method", c.Request.Method),
+					slog.String("path", c.Request.URL.Path),
+				)
+				c.JSON(appErr.Code, ErrorResponse{
+					Code:  appErr.Code,
+					Error: appErr.ErrorMessage.Error(),
+				})
+				c.Abort()
+				return
 			}
 
-			response := ErrorResponse{
-				Error: msg,
-				Code:  code,
-			}
-
-			// In development mode, include original error message
-			if gin.Mode() == gin.DebugMode {
-				response.Error = err.Error()
-			}
-
-			c.JSON(status, response)
-			c.Abort() // Prevent further processing
+			// Handle generic errors
+			c.JSON(http.StatusInternalServerError, ErrorResponse{
+				Error: "internal server error",
+				Code:  http.StatusInternalServerError,
+			})
+			c.Abort()
 		}
 	}
 }

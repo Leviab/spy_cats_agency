@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"errors"
-	"fmt"
 	"net/http"
 	"spy_cats_agency/internal/domain"
 	"spy_cats_agency/internal/service"
@@ -35,7 +33,7 @@ func NewCatHandler(catService service.CatService) *CatHandler {
 func (h *CatHandler) CreateCat(c *gin.Context) {
 	var req CreateCatRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusBadRequest, err.Error(), err))
 		return
 	}
 
@@ -47,7 +45,7 @@ func (h *CatHandler) CreateCat(c *gin.Context) {
 	}
 
 	if err := h.catService.CreateCat(c.Request.Context(), cat); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to create a cat", err))
 		return
 	}
 
@@ -67,13 +65,13 @@ func (h *CatHandler) CreateCat(c *gin.Context) {
 func (h *CatHandler) GetCat(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "Invalid ID format", err))
 		return
 	}
 
 	cat, err := h.catService.GetCat(c.Request.Context(), id)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to get a cat", err))
 		return
 	}
 
@@ -91,8 +89,7 @@ func (h *CatHandler) GetCat(c *gin.Context) {
 func (h *CatHandler) ListCats(c *gin.Context) {
 	cats, err := h.catService.ListCats(c.Request.Context())
 	if err != nil {
-		fmt.Printf("err type: %T, value: %+v\n", err, err)
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "failed to list cats", err))
 		return
 	}
 
@@ -114,19 +111,19 @@ func (h *CatHandler) ListCats(c *gin.Context) {
 func (h *CatHandler) UpdateCatSalary(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "Invalid ID format", err))
 		return
 	}
 
 	var req UpdateCatSalaryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusBadRequest, err.Error(), err))
 		return
 	}
 
 	cat, err := h.catService.UpdateCatSalary(c.Request.Context(), id, req.Salary)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "failed to update cats salary", err))
 		return
 	}
 
@@ -145,12 +142,12 @@ func (h *CatHandler) UpdateCatSalary(c *gin.Context) {
 func (h *CatHandler) DeleteCat(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		_ = c.Error(errors.New("invalid id format"))
+		_ = c.Error(NewAppError(http.StatusBadRequest, "Invalid ID format", err))
 		return
 	}
 
 	if err := h.catService.DeleteCat(c.Request.Context(), id); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to delete a cat", err))
 		return
 	}
 

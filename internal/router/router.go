@@ -22,7 +22,7 @@ func Setup(cfg Config) *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Recovery())
 	router.Use(logger.Middleware(cfg.Logger))
-	router.Use(handler.ErrorMiddleware())
+	router.Use(handler.ErrorMiddleware(cfg.Logger))
 
 	// Swagger documentation
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
