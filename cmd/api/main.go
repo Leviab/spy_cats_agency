@@ -54,12 +54,17 @@ func main() {
 
 	appLogger.Info("Database connection established")
 
+	// Initialize repositories
+	catRepo := postgres.NewCatRepository(db)
+	missionRepo := postgres.NewMissionRepository(db)
+	targetRepo := postgres.NewTargetRepository(db)
+
 	// Initialize the CatAPI client
 	catAPIClient := catapi.NewClient(cfg.CatAPIEndpoint)
 
 	// Initialize services
-	catService := service.NewCatService(db, catAPIClient)
-	missionService := service.NewMissionService(db, db, db) // db implements all repo interfaces
+	catService := service.NewCatService(catRepo, catAPIClient)
+	missionService := service.NewMissionService(missionRepo, targetRepo, catRepo)
 
 	// Initialize handlers
 	catHandler := handler.NewCatHandler(catService)
