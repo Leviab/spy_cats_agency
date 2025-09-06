@@ -22,6 +22,9 @@ type MissionService interface {
 	UpdateMission(ctx context.Context, mission *domain.Mission) error
 	DeleteMission(ctx context.Context, id int) error
 	AssignCatToMission(ctx context.Context, missionID, catID int) error
+
+	// CompleteMission manually marks a mission as completed or uncompleted.
+	CompleteMission(ctx context.Context, missionID int, completed bool) (*domain.Mission, error)
 	AddTargetToMission(ctx context.Context, missionID int, target *domain.Target) error
 	UpdateTargetNotes(ctx context.Context, targetID int, notes string) (*domain.Target, error)
 	CompleteTarget(ctx context.Context, targetID int) (*domain.Target, error)

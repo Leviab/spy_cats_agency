@@ -20,7 +20,6 @@ type DB struct {
 func New(cfg config.Config) (*DB, error) {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
 		cfg.DBHost, cfg.DBPort, cfg.DBUser, cfg.DBPassword, cfg.DBName)
-
 	db, err := sqlx.Connect("postgres", psqlInfo)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to database: %w", err)
@@ -85,8 +84,8 @@ func (db *DB) CreateMission(ctx context.Context, mission *domain.Mission) error 
 	defer tx.Rollback() // Rollback is a no-op if the transaction is committed.
 
 	// Create the mission
-	missionQuery := `INSERT INTO missions (completed) VALUES ($1) RETURNING id, created_at, updated_at`
-	err = tx.QueryRowxContext(ctx, missionQuery, mission.Completed).Scan(&mission.ID, &mission.CreatedAt, &mission.UpdatedAt)
+	missionQuery := `INSERT INTO missions (cat_id, completed) VALUES ($1, $2) RETURNING id, created_at, updated_at`
+	err = tx.QueryRowxContext(ctx, missionQuery, mission.CatID, mission.Completed).Scan(&mission.ID, &mission.CreatedAt, &mission.UpdatedAt)
 	if err != nil {
 		return err
 	}
@@ -137,8 +136,8 @@ func (db *DB) ListMissions(ctx context.Context) ([]domain.Mission, error) {
 
 // UpdateMission updates a mission's state.
 func (db *DB) UpdateMission(ctx context.Context, mission *domain.Mission) error {
-	query := `UPDATE missions SET completed = $1, updated_at = now() WHERE id = $2 RETURNING updated_at`
-	return db.QueryRowxContext(ctx, query, mission.Completed, mission.ID).Scan(&mission.UpdatedAt)
+	query := `UPDATE missions SET cat_id = $1, completed = $2, updated_at = now() WHERE id = $3 RETURNING updated_at`
+	return db.QueryRowxContext(ctx, query, mission.CatID, mission.Completed, mission.ID).Scan(&mission.UpdatedAt)
 }
 
 // DeleteMission deletes a mission.
