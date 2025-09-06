@@ -46,11 +46,6 @@ func (c *Client) GetBreeds() ([]Breed, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// Double check in case another goroutine just fetched the data
-	if time.Since(c.lastFetch) < time.Hour {
-		return c.breeds, nil
-	}
-
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s/breeds", c.BaseURL), nil)
 	if err != nil {
 		return nil, err

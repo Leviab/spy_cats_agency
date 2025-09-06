@@ -7,38 +7,83 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// ErrorResponse represents a structured error response.
 type ErrorResponse struct {
 	Error string `json:"error"`
+	Code  string `json:"code,omitempty"`
 }
 
 type MessageResponse struct {
 	Message string `json:"message"`
 }
 
-// ErrorMiddleware creates a new error handling middleware.
 func ErrorMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
 		if len(c.Errors) > 0 {
-			// For now, we'll just take the last error.
-			// In a real app, you might want to log all of them.
 			err := c.Errors.Last()
-			// Check the error type and set the status code accordingly.
-			// This is a simple example; you could have custom error types.
 			status := http.StatusInternalServerError
-			msg := err.Error()
+			msg := "Internal server error"
+			code := "INTERNAL_ERROR"
 
-			if strings.Contains(msg, "not found") {
+			errMsg := strings.ToLower(err.Error())
+
+			switch {
+			case strings.Contains(errMsg, "not found"):
 				status = http.StatusNotFound
-			} else if strings.Contains(msg, "invalid") || strings.Contains(msg, "must have between") || strings.Contains(msg, "cannot have more than") {
+				msg = "Resource not found"
+				code = "NOT_FOUND"
+
+			case strings.Contains(errMsg, "unauthorized") || strings.Contains(errMsg, "unauthenticated"):
+				status = http.StatusUnauthorized
+				msg = "Authentication required"
+				code = "UNAUTHORIZED"
+
+			case strings.Contains(errMsg, "forbidden") || strings.Contains(errMsg, "access denied"):
+				status = http.StatusForbidden
+				msg = "Access denied"
+				code = "FORBIDDEN"
+
+			case strings.Contains(errMsg, "invalid") ||
+				strings.Contains(errMsg, "must have between") ||
+				strings.Contains(errMsg, "cannot have more than") ||
+				strings.Contains(errMsg, "validation failed") ||
+				strings.Contains(errMsg, "bad request"):
 				status = http.StatusBadRequest
-			} else if strings.Contains(msg, "cannot delete") || strings.Contains(msg, "not available") {
+				msg = "Invalid request"
+				code = "BAD_REQUEST"
+
+			case strings.Contains(errMsg, "cannot delete") ||
+				strings.Contains(errMsg, "not available") ||
+				strings.Contains(errMsg, "conflict") ||
+				strings.Contains(errMsg, "already exists"):
 				status = http.StatusConflict
+				msg = "Resource conflict"
+				code = "CONFLICT"
+
+			case strings.Contains(errMsg, "timeout") || strings.Contains(errMsg, "deadline exceeded"):
+				status = http.StatusRequestTimeout
+				msg = "Request timeout"
+				code = "TIMEOUT"
+
+			case strings.Contains(errMsg, "too many"):
+				status = http.StatusTooManyRequests
+				msg = "Rate limit exceeded"
+				code = "RATE_LIMIT"
 			}
 
-			c.JSON(status, ErrorResponse{Error: msg})
+			response := ErrorResponse{
+				Error: msg,
+				Code:  code,
+			}
+
+			// In development mode, include original error message
+			if gin.Mode() == gin.DebugMode {
+				response.Error = err.Error()
+			}
+
+			c.JSON(status, response)
+			c.Abort() // Prevent further processing
 		}
 	}
 }
