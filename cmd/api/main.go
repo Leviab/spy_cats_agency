@@ -64,16 +64,19 @@ func main() {
 
 	// Initialize services
 	catService := service.NewCatService(catRepo, catAPIClient)
-	missionService := service.NewMissionService(missionRepo, targetRepo, catRepo)
+	missionService := service.NewMissionService(missionRepo, catRepo)
+	targetService := service.NewTargetService(targetRepo, missionRepo)
 
 	// Initialize handlers
 	catHandler := handler.NewCatHandler(catService)
 	missionHandler := handler.NewMissionHandler(missionService)
+	targetHandler := handler.NewTargetHandler(targetService)
 
 	// Set up router with all routes
 	routerInstance := router.Setup(router.Config{
 		CatHandler:     catHandler,
 		MissionHandler: missionHandler,
+		TargetHandler:  targetHandler,
 		Logger:         appLogger,
 	})
 

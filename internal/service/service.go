@@ -25,6 +25,10 @@ type MissionService interface {
 
 	// CompleteMission manually marks a mission as completed or uncompleted.
 	CompleteMission(ctx context.Context, missionID int, completed bool) (*domain.Mission, error)
+}
+
+// TargetService defines the interface for target-related business logic.
+type TargetService interface {
 	AddTargetToMission(ctx context.Context, missionID int, target *domain.Target) error
 	UpdateTargetNotes(ctx context.Context, targetID int, notes string) (*domain.Target, error)
 	CompleteTarget(ctx context.Context, targetID int) (*domain.Target, error)

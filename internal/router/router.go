@@ -14,6 +14,7 @@ import (
 type Config struct {
 	CatHandler     *handler.CatHandler
 	MissionHandler *handler.MissionHandler
+	TargetHandler  *handler.TargetHandler
 	Logger         *slog.Logger
 }
 
@@ -43,8 +44,8 @@ func setupAPIRoutes(router *gin.Engine, cfg Config) {
 	api := router.Group("/api/v1")
 	{
 		setupCatRoutes(api, cfg.CatHandler)
-		setupMissionRoutes(api, cfg.MissionHandler)
-		setupTargetRoutes(api, cfg.MissionHandler)
+		setupMissionRoutes(api, cfg.MissionHandler, cfg.TargetHandler)
+		setupTargetRoutes(api, cfg.TargetHandler)
 	}
 }
 
@@ -61,7 +62,7 @@ func setupCatRoutes(api *gin.RouterGroup, catHandler *handler.CatHandler) {
 }
 
 // setupMissionRoutes configures mission-related routes.
-func setupMissionRoutes(api *gin.RouterGroup, missionHandler *handler.MissionHandler) {
+func setupMissionRoutes(api *gin.RouterGroup, missionHandler *handler.MissionHandler, targetHandler *handler.TargetHandler) {
 	missions := api.Group("/missions")
 	{
 		missions.POST("", missionHandler.CreateMission)
@@ -70,16 +71,16 @@ func setupMissionRoutes(api *gin.RouterGroup, missionHandler *handler.MissionHan
 		missions.DELETE("/:id", missionHandler.DeleteMission)
 		missions.PATCH("/:id/assign-cat", missionHandler.AssignCatToMission)
 		missions.PATCH("/:id/complete", missionHandler.CompleteMission)
-		missions.POST("/:id/targets", missionHandler.AddTargetToMission)
+		missions.POST("/:id/targets", targetHandler.AddTargetToMission)
 	}
 }
 
 // setupTargetRoutes configures target-related routes.
-func setupTargetRoutes(api *gin.RouterGroup, missionHandler *handler.MissionHandler) {
+func setupTargetRoutes(api *gin.RouterGroup, targetHandler *handler.TargetHandler) {
 	targets := api.Group("/targets")
 	{
-		targets.PATCH("/:id/notes", missionHandler.UpdateTargetNotes)
-		targets.PATCH("/:id/complete", missionHandler.CompleteTarget)
-		targets.DELETE("/:id", missionHandler.DeleteTarget)
+		targets.PATCH("/:id/notes", targetHandler.UpdateTargetNotes)
+		targets.PATCH("/:id/complete", targetHandler.CompleteTarget)
+		targets.DELETE("/:id", targetHandler.DeleteTarget)
 	}
 }
