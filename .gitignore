@@ -1,0 +1,24 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+spy_cats_agency
+
+# Test binaries
+*.test
+
+# Vendor directory
+vendor/
+
+# Env file
+.env
+
+# IDE settings
+.idea/
+.vscode/
+
+# OS-specific
+.DS_Store
+thumbs.db
