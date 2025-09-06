@@ -45,7 +45,7 @@ func (h *CatHandler) CreateCat(c *gin.Context) {
 	}
 
 	if err := h.catService.CreateCat(c.Request.Context(), cat); err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to create a cat", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 
@@ -71,7 +71,7 @@ func (h *CatHandler) GetCat(c *gin.Context) {
 
 	cat, err := h.catService.GetCat(c.Request.Context(), id)
 	if err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to get a cat", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 
@@ -123,7 +123,7 @@ func (h *CatHandler) UpdateCatSalary(c *gin.Context) {
 
 	cat, err := h.catService.UpdateCatSalary(c.Request.Context(), id, req.Salary)
 	if err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "failed to update cats salary", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 
@@ -147,7 +147,7 @@ func (h *CatHandler) DeleteCat(c *gin.Context) {
 	}
 
 	if err := h.catService.DeleteCat(c.Request.Context(), id); err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to delete a cat", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 

@@ -46,7 +46,7 @@ func (h *TargetHandler) AddTargetToMission(c *gin.Context) {
 
 	target := &domain.Target{Name: req.Name, Country: req.Country, Notes: req.Notes}
 	if err := h.targetService.AddTargetToMission(c.Request.Context(), missionID, target); err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to add target to mission", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 
@@ -80,7 +80,7 @@ func (h *TargetHandler) UpdateTargetNotes(c *gin.Context) {
 
 	target, err := h.targetService.UpdateTargetNotes(c.Request.Context(), targetID, req.Notes)
 	if err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to update target notes", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 
@@ -105,7 +105,7 @@ func (h *TargetHandler) CompleteTarget(c *gin.Context) {
 
 	target, err := h.targetService.CompleteTarget(c.Request.Context(), targetID)
 	if err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to complete target", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 
@@ -129,7 +129,7 @@ func (h *TargetHandler) DeleteTarget(c *gin.Context) {
 	}
 
 	if err := h.targetService.DeleteTarget(c.Request.Context(), targetID); err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to delete target", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 

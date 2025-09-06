@@ -45,7 +45,7 @@ func (h *MissionHandler) CreateMission(c *gin.Context) {
 	}
 
 	if err := h.missionService.CreateMission(c.Request.Context(), mission); err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to create mission", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 
@@ -113,7 +113,7 @@ func (h *MissionHandler) DeleteMission(c *gin.Context) {
 	}
 
 	if err := h.missionService.DeleteMission(c.Request.Context(), id); err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to delete mission", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 
@@ -146,7 +146,7 @@ func (h *MissionHandler) AssignCatToMission(c *gin.Context) {
 	}
 
 	if err := h.missionService.AssignCatToMission(c.Request.Context(), missionID, req.CatID); err != nil {
-		_ = c.Error(NewAppError(http.StatusInternalServerError, "Failed to assign cat to mission", err))
+		_ = c.Error(NewAppError(http.StatusInternalServerError, err.Error(), err))
 		return
 	}
 
@@ -187,7 +187,3 @@ func (h *MissionHandler) CompleteMission(c *gin.Context) {
 
 	c.JSON(http.StatusOK, mission)
 }
-
-
-
-
